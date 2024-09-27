@@ -1,5 +1,5 @@
 /*
- * Author: Eleanor Michelsen
+ * Authors: Eleanor Michelsen, Jonah Mangi
  * Assignment: C10A
  */
 
@@ -11,19 +11,26 @@ import java.util.Scanner;
 
 public class ScoreTrakker {
 
-	private static ArrayList<Student> students = new ArrayList<Student>(); 
-	
-	/* Empty constructor for if you need to unstatic all methods. Please delete it otherwise. 
-	 * ScoreTrakker(){}
-	 */
+	private static ArrayList<Student> students = new ArrayList<Student>();
+	private String[] files = {"scores.txt", "badscore.txt", "nofile.txt" };
 	
 	public static void loadDataFile(String fileName) throws FileNotFoundException {
 		FileReader read = new FileReader(fileName);
 		Scanner sc = new Scanner(read);
+		String nameTemp = ""; // Create the temporary variables outside of the try block so that the catch can read them
+		String scoreTemp = ""; // scoreTemp is a string because only invalid scores (strings) will be stored here
 		while (sc.hasNext()) {
-		String nameTemp = sc.next() + " " + sc.next();
-		int scoreTemp = sc.nextInt();
-		students.add(new Student(nameTemp, scoreTemp));}
+            try {
+                nameTemp = sc.next() + " " + sc.next(); 
+                scoreTemp = sc.next();
+                int score = Integer.parseInt(scoreTemp); // Try to parse the score
+                students.add(new Student(nameTemp, score));
+            } catch (NumberFormatException e) {
+                // If we're here, the parsing failed, and the score is not valid
+                System.out.println("Incorrect format for " + nameTemp + " not a valid score: " + scoreTemp);
+            }
+        }
+		sc.close();
 	}
 	
 	public static void printInOrder(ArrayList<Student> sortedStudents) {
@@ -34,15 +41,21 @@ public class ScoreTrakker {
 		}
 	}
 	
-	public static void main(String[] args) {
-		try {
-			loadDataFile("scores.txt");
-			printInOrder(students);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void processFiles() { 
+		for (String fileName : files) {
+			try {
+				loadDataFile(fileName);
+				printInOrder(students);
+			} catch (FileNotFoundException e) {
+				System.out.println("Can't open file: " + fileName);
+			}
 		}
 
 	}
+	
+	public static void main(String[] args) {
+        ScoreTrakker tracker = new ScoreTrakker();
+        tracker.processFiles();
+    }
 
 }
